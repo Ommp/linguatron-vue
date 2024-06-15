@@ -8,8 +8,8 @@ const deck = ref();
 
 const loading = ref(true);
 
-const formQuestion = ref("default");
-const formAnswer = ref("default");
+const formQuestion = ref("");
+const formAnswer = ref("");
 
 async function fetchDeck(id: number) {
 
@@ -26,7 +26,8 @@ async function fetchDeck(id: number) {
 
 async function createCard() {
     const id = route.params.id;
-    const data = {question: formQuestion.value, answer: formAnswer.value, deck_id: id};
+    const date = new Date().toISOString();
+    const data = {question: formQuestion.value, answer: formAnswer.value, deck_id: id, card_created: date};
     try {
         const res = await fetch(`http://127.0.0.1:3000/api/deck/${id}/card/create`, {
             method: "POST",
@@ -64,8 +65,8 @@ onMounted(async () => {
         <input type="text" v-model="formQuestion" placeholder="Enter question">
         <input type="text" v-model="formAnswer" placeholder="Enter answer">
 
-        <h1>Form Question: {{ formQuestion }}</h1>
-        <h1>Form Answer: {{ formAnswer }}</h1>
+        <!-- <h1>Form Question: {{ formQuestion }}</h1> -->
+        <!-- <h1>Form Answer: {{ formAnswer }}</h1> -->
 
         <button @click="createCard" class="btn">Create card</button>
     </div>

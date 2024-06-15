@@ -6,11 +6,15 @@ import {Deck, Card} from '../interfaces';
 const route = useRoute();
 
 const deck = ref<Deck>();
-const cards = ref([]);
+const cards = ref<Card[]>([]);
 
 const loading = ref(true);
 
 const formAnswer = ref("");
+
+const multipleChoice = ref(true);
+
+const multipleChoiceCards = ref<Card[]>([]);
 
 async function fetchDeck(id: number) {
 
@@ -37,10 +41,33 @@ async function getRandomLearningCards(id: number) {
 
 
 }
+async function getMultipleChoiceCards(id: number) {
+
+    try {
+        const res = await fetch(`http://127.0.0.1:3000/api/deck/${id}/multiplechoicecards`);
+        const cards0 = await res.json();
+
+        //add correct card to multiple choice cards
+        cards0.push(cards.value[0]);
+        const shuffled = cards0
+            .map((value: Card) => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value)
+
+        return shuffled;
+    } catch (error) {
+        console.error(error);
+    }
+
+
+}
+
+async function setMultipleChoice() {
+    multipleChoiceCards.value = await getMultipleChoiceCards(route.params.id);
+}
 
 async function updateCard(card_id: number, correctInARow: number) {
-    console.error("updatecard's correct-in-a-row: " + correctInARow);
-    const data = { answer: formAnswer.value, card_id: card_id, correct_in_a_row: correctInARow };
+    const data = { type: "learning", answer: formAnswer.value, card_id: card_id, correct_in_a_row: correctInARow, last_review_date: new Date().toISOString()};
     try {
         const res = await fetch(`http://127.0.0.1:3000/api/learning/updatecard`, {
             method: "PUT",
@@ -78,6 +105,7 @@ async function deleteCard() {
 onMounted(async () => {
     deck.value = await fetchDeck(route.params.id);
     cards.value = await getRandomLearningCards(route.params.id);
+    setMultipleChoice();
     loading.value = false;
 });
 
@@ -86,7 +114,12 @@ function moveCurrentCardToLast() {
     cards.value.shift();
 }
 
-function handleAnswer() {
+async function handleButtonAnswer(card:Card) {
+    formAnswer.value = card.answer;
+    handleAnswer();
+}
+
+async function handleAnswer() {
 
     const cardAnswer = <String>cards.value[0].answer.toLowerCase();
     formAnswer.value = formAnswer.value.toLowerCase();
@@ -96,23 +129,22 @@ function handleAnswer() {
         cards.value[0].incorrect++;
         cards.value[0].correctInARow = 0;
         updateCard(cards.value[0].card_id, cards.value[0].correctInARow);
+        moveCurrentCardToLast();
+        setMultipleChoice();
     }
-    if (formAnswer.value == cardAnswer) {
+     else if (formAnswer.value == cardAnswer) {
         //card not correct two times in a row
         if (cards.value[0].correctInARow < 1 || !cards.value[0].correctInARow) {
             cards.value[0].correctInARow = 1;
-            console.log("not two in a row");
-            console.log(cards.value[0].correctInARow);
             updateCard(cards.value[0].card_id, cards.value[0].correctInARow);
+            moveCurrentCardToLast();
+            setMultipleChoice();
         } else /*correct two times in a row*/ {
-            console.log("two in a row");
             cards.value[0].correctInARow++;
-            console.log(cards.value[0].correctInARow);
             updateCard(cards.value[0].card_id, cards.value[0].correctInARow);
             cards.value.shift();
+            setMultipleChoice();
         }
-        
-        moveCurrentCardToLast();
     }
 
 
@@ -133,6 +165,13 @@ function handleAnswer() {
         <input type="text" v-model="formAnswer" placeholder="Enter answer" @submit="handleAnswer">
         <button @click="handleAnswer" class="btn">Submit answer</button>
         <button @click="deleteCard" class="btn-warning">Delete card</button>
+        <div v-if="multipleChoice" class="multiplechoice">
+            <ul class="flex flex-col gap-1">
+                <button v-for="card in multipleChoiceCards" class="btn" @click="handleButtonAnswer(card)">
+                    {{ card.answer }}
+                </button>
+            </ul>
+        </div>
     </div>
 
 
