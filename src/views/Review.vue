@@ -44,17 +44,11 @@ async function getRandomReviewCards(id: number) {
 async function getMultipleChoiceCards(id: number) {
 
     try {
-        const res = await fetch(`http://127.0.0.1:3000/api/deck/${id}/multiplechoicecards`);
+        const res = await fetch(`http://127.0.0.1:3000/api/deck/${id}/multiplechoicecards/${cards.value[0].card_id}`);
         const cards0 = await res.json();
+        console.error(cards.value[0].card_id);
 
-        //add correct card to multiple choice cards
-        cards0.push(cards.value[0]);
-        const shuffled = cards0
-            .map((value: Card) => ({ value, sort: Math.random() }))
-            .sort((a, b) => a.sort - b.sort)
-            .map(({ value }) => value)
-
-        return shuffled;
+        return cards0;
     } catch (error) {
         console.error(error);
     }
