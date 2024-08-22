@@ -5,6 +5,9 @@ import { useRoute } from 'vue-router';
 const cards = ref([]);
 const route = useRoute();
 
+const loading = ref(true);
+
+
 async function fetchCardsFromOneDeck(id: number) {
 
     try {

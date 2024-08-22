@@ -13,9 +13,11 @@ import Learn from './views/Learn.vue';
 import Review from './views/Review.vue';
 import CardBrowser from './views/CardBrowser.vue';
 import CreateCard from './views/CreateCard.vue';
+import CreateDeck from './views/CreateDeck.vue';
 
 const routes = [
     { path: "/decks", component: Decks },
+    { path: "/deck/create", component: CreateDeck },
     { path: "/deck/:id", component: Deck },
     { path: "/deck/:id/learn", component: Learn },
     { path: "/deck/:id/review", component: Review },

@@ -149,10 +149,10 @@ async function handleAnswer() {
 <template>
 
 
-    <div v-if="!loading">
+    <div v-if="!loading" class="grid justify-center gap-2">
         <h1>Learning session for deck: {{ deck.deckname }}</h1>
         <h5>Question</h5>
-        <p>{{ cards[0].question }}</p>
+        <p class="font-medium text-2xl">{{ cards[0].question }}</p>
         <!-- <p>{{ cards }}</p> -->
         <h5>Type your answer:</h5>
         <input type="text" v-model="formAnswer" placeholder="Enter answer" @submit="handleAnswer">
